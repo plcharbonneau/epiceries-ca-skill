@@ -1,0 +1,4 @@
+interface:
+  display_name: "Épiceries.ca API"
+  short_description: "Compare Québec groceries through the public API"
+  default_prompt: "Use $epiceries-api to compare prices for my grocery list across Québec retailers, including sizes, observation dates, and source links."
