@@ -1,11 +1,12 @@
 # API contract and usage
 
-Source: [official developer documentation](https://www.epiceries.ca/developers), checked 2026-09-22. The live [API entrypoint](https://epiceries.ca/api) lists supported stores and endpoints. This is a compact operational reference; the provider's current contract takes precedence.
+Source: [official developer documentation](https://www.epiceries.ca/developers), checked 2026-09-23. The live [API entrypoint](https://epiceries.ca/api) lists supported stores and endpoints. This is a compact operational reference; the provider's current contract takes precedence.
 
 ## Transport and responses
 
 - Base: `https://epiceries.ca/api`; query parameters select an endpoint. Only GET is documented. No authentication, API key or postal-code parameter.
 - The store identifiers are `maxi`, `iga`, `superc`, `metro`, `provigo`, `walmart`.
+- There is no documented bulk shopping-list or branch/postal-code endpoint. The batch comparison helper calls `search` and then `product` for each candidate, observing the API's reasonable-use guidance; it cannot enumerate a whole store catalogue.
 - Success: `{"ok":true,"data":...}`. Failure: `{"ok":false,"error":{"code":...,"message":...}}`, normally with HTTP 400, 404, 405 or 500. Missing products are not evidence of missing inventory.
 - Provider guidance: cache responses, avoid request bursts, remain below a few calls per second. The documented response cache is five minutes; price collection is described as weekly. Fetch time and observation time are different.
 - Public responses are JSON and permit browser CORS. Direct callers should identify their client and request JSON. A descriptive User-Agent worked in live Python testing; the default urllib User-Agent received 403. Stop on persistent 403 rather than attempting access-control workarounds.
@@ -68,7 +69,9 @@ Search results expose service `id`, `name`, `brand`, `size`, lowest `price`, `st
 
 ## Live verification notes
 
-2026-09-22: all seven helper commands (`info`, `categories`, `search`, `product`, `history`, `barcode`, `storeproduct`) returned successful JSON without credentials. The product/retailer/barcode chain resolved the same observed product ID. A repeated detail request hit the local cache; an unknown product returned a structured 404 and exit 1. Eleven offline tests passed, including bounded retry behavior and refusal to serve an expired cached result after an API failure.
+2026-09-22: all seven low-level helper commands (`info`, `categories`, `search`, `product`, `history`, `barcode`, `storeproduct`) returned successful JSON without credentials. The product/retailer/barcode chain resolved the same observed product ID. A repeated detail request hit the local cache; an unknown product returned a structured 404 and exit 1. Eleven offline low-level tests passed, including bounded retry behavior and refusal to serve an expired cached result after an API failure.
+
+2026-09-23: the batch helper successfully fetched search candidates and per-retailer detail. A live `beurre 454` search returned both 454 g butter and 454 g butter cookies; search matches therefore require product review before any item-level ranking. The returned IGA observation dates were distinct from the batch request time. No local branch checkout price or stock was verified.
 
 Category examples in the website documentation differed from the live mapping: the live `Lait` category was 7 and `Beurre` was 10. Always resolve the current mapping.
 
