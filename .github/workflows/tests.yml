@@ -23,4 +23,6 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Run offline client tests
-        run: python scripts/test_epiceries.py
+        run: |
+          python scripts/test_epiceries.py
+          python scripts/test_compare_list.py
